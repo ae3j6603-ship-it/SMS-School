@@ -1,1 +1,1 @@
-window.SCHOOL_CONFIG = {"supabaseUrl":"https://uclowwjwhihmephyniaq.supabase.co","supabaseAnonKey":"sb_publishable_wWiGYCd_sJlWwDDoerua9A_wiXlEP6U"};
+window.SCHOOL_CONFIG = {"supabaseUrl":"https://kbuprkenotnvepffjizg.supabase.co","supabaseAnonKey":"sb_publishable_GtmKyJqSedo2VE0gSD0rlQ_grK5KiMY"};
