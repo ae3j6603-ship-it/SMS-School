@@ -1,0 +1,11 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {parseCSV,csvCell,grade,esc,validateData,canWrite,validConfig,today} from '../dist/core.js';
+test('CSV round trip handles commas, multiline, quotes and Thai',()=>{const row=['001','สมชาย, ใจดี','บรรทัด 1\nบรรทัด 2','say "hello"'];assert.deepEqual(parseCSV('\ufeff'+row.map(csvCell).join(',')),[row])});
+test('CSV export neutralizes spreadsheet formulas',()=>{for(const s of ['=HYPERLINK("x")',' +cmd','@SUM(A1)','-1+2'])assert.equal(csvCell(s).slice(0,2),'"\'')});
+test('malformed CSV is rejected',()=>assert.throws(()=>parseCSV('"unclosed')));
+test('grade boundaries are correct',()=>assert.deepEqual([49,50,55,60,65,70,75,80,100].map(grade),['0','1','1.5','2','2.5','3','3.5','4','4']));
+test('data validation rejects invalid grades and preserves student codes',()=>{assert.throws(()=>validateData('Scores',{total:101}));assert.throws(()=>validateData('Scores',{total:''}));assert.throws(()=>validateData('Projects',{name:'x',budget_alloc:-1}));assert.equal(validateData('Students',{student_id:'001',first_name:'ก',class_level:'ป.1'}).student_id,'001')});
+test('escaping prevents stored HTML interpretation',()=>assert.equal(esc('<script>"x"</script>'), '&lt;script&gt;&quot;x&quot;&lt;/script&gt;'));
+test('financial and inventory ledgers cannot be edited through generic forms',()=>{for(const role of ['admin','director','teacher','finance'])for(const kind of ['ProjRequests','ProjExpenses','Savings','SupplyLots','SupplyTransactions','BookLoans','AssetLoans'])assert.equal(canWrite(role,kind),false)});
+test('finance cannot edit students and teacher cannot edit school master data',()=>{assert.equal(canWrite('finance','Students'),false);assert.equal(canWrite('teacher','Teachers'),false);assert.equal(canWrite('teacher','Scores'),true)});
+test('frontend rejects secret/service keys and invalid hosts',()=>{assert.equal(validConfig({supabaseUrl:'https://abc.supabase.co',supabaseAnonKey:'sb_secret_danger'}),false);assert.equal(validConfig({supabaseUrl:'https://abc.supabase.co',supabaseAnonKey:'sb_publishable_test'}),true);assert.equal(validConfig({supabaseUrl:'https://evil.example',supabaseAnonKey:'sb_publishable_test'}),false)});
+test('Bangkok date uses ISO calendar date',()=>assert.match(today(),/^\d{4}-\d{2}-\d{2}$/));
